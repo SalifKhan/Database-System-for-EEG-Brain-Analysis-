@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}EEG Signals{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>EEG Signals</h2>
+        <a href="{{ url_for('signals.upload') }}" class="btn btn-primary">
+            <i class="fas fa-upload"></i> Upload New Signal
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if signals %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Recording Date</th>
+                    <th>Subject</th>
+                    <th>Task</th>
+                    <th>Duration</th>
+                    <th>Channels</th>
+                    <th>Quality</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for signal in signals %}
+                <tr>
+                    <td>{{ signal.signal_id }}</td>
+                    <td>{{ signal.eeg_reading.recording_date|datetime }}</td>
+                    <td>{{ signal.eeg_reading.subject.name }}</td>
+                    <td>{{ signal.eeg_reading.task.task_name }}</td>
+                    <td>{{ signal.eeg_reading.duration_seconds }} seconds</td>
+                    <td>{{ signal.channel_name }}</td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if signal.signal_quality == 'Excellent' 
+                                             else 'warning' if signal.signal_quality == 'Good' 
+                                             else 'danger' }}">
+                            {{ signal.signal_quality }}
+                        </span>
+                    </td>
+                    <td class="text-nowrap">
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('signals.view', signal_id=signal.signal_id) }}" 
+                               class="btn btn-info" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('signals.analyze', signal_id=signal.signal_id) }}" 
+                               class="btn btn-success" title="Analyze">
+                                <i class="fas fa-chart-line"></i>
+                            </a>
+                            <button type="button" class="btn btn-danger" title="Delete"
+                                    onclick="confirmDelete('{{ signal.signal_id }}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        No signals found. Click "Upload New Signal" to add one.
+    </div>
+    {% endif %}
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this signal?
+                </div>
+                <div class="modal-footer">
+                    <form id="deleteForm" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmDelete(signalId) {
+    const modal = document.getElementById('deleteModal');
+    const form = document.getElementById('deleteForm');
+    form.action = `/signals/${signalId}/delete`;
+    new bootstrap.Modal(modal).show();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Add fade out effect to alerts after 5 seconds
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            alert.classList.remove('show');
+        });
+    }, 5000);
+});
+</script>
+{% endblock %} 

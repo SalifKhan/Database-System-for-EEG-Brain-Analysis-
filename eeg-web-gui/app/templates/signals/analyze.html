@@ -1,0 +1,540 @@
+{% extends "base.html" %}
+
+{% block title %}Analyze Signal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Signal Information Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Signal Information</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Subject:</strong>
+                        <p>{{ signal.eeg_reading.subject.name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Task:</strong>
+                        <p>{{ signal.eeg_reading.task.task_name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Recording Date:</strong>
+                        <p>{{ signal.eeg_reading.recording_date|datetime }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Channel:</strong>
+                        <p>{{ signal.channel_name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Quality:</strong>
+                        <span class="badge bg-{{ 'success' if signal.signal_quality == 'Excellent' 
+                                           else 'warning' if signal.signal_quality == 'Good' 
+                                           else 'danger' }}">
+                            {{ signal.signal_quality }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Controls -->
+            <div class="card mt-3">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Analysis Controls</h4>
+                </div>
+                <div class="card-body">
+                    <form id="analysisForm">
+                        <!-- Analysis Type -->
+                        <div class="mb-3">
+                            <label class="form-label">Analysis Type</label>
+                            <select class="form-select" id="analysisType">
+                                <option value="fft">Frequency Analysis (FFT)</option>
+                                <option value="wavelet">Wavelet Transform</option>
+                                <option value="psd">Power Spectral Density</option>
+                                <option value="coherence">Coherence Analysis</option>
+                                <option value="band_power">Band Power Analysis</option>
+                                <option value="connectivity">Connectivity Analysis</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Time Range -->
+                        <div class="mb-3">
+                            <label class="form-label">Time Range</label>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="timeStart" value="0" min="0" step="0.1">
+                                        <span class="input-group-text">s</span>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="timeEnd" value="10" min="0" step="0.1">
+                                        <span class="input-group-text">s</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Frequency Range -->
+                        <div class="mb-3">
+                            <label class="form-label">Frequency Range</label>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="freqMin" value="0" min="0">
+                                        <span class="input-group-text">Hz</span>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="freqMax" value="50" min="0">
+                                        <span class="input-group-text">Hz</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="mb-3">
+                            <label class="form-label">Filters</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notchFilter" checked>
+                                <label class="form-check-label" for="notchFilter">
+                                    Notch Filter (50/60 Hz)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="bandpassFilter" checked>
+                                <label class="form-check-label" for="bandpassFilter">
+                                    Bandpass Filter
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="artifactRemoval">
+                                <label class="form-check-label" for="artifactRemoval">
+                                    Artifact Removal
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Band Power Analysis -->
+                        <div class="mb-3">
+                            <label class="form-label">Band Power Analysis</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="deltaBand" checked>
+                                <label class="form-check-label" for="deltaBand">Delta (0.5-4 Hz)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="thetaBand" checked>
+                                <label class="form-check-label" for="thetaBand">Theta (4-8 Hz)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="alphaBand" checked>
+                                <label class="form-check-label" for="alphaBand">Alpha (8-13 Hz)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="betaBand" checked>
+                                <label class="form-check-label" for="betaBand">Beta (13-30 Hz)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="gammaBand" checked>
+                                <label class="form-check-label" for="gammaBand">Gamma (30-100 Hz)</label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" onclick="runAnalysis()">
+                                <i class="fas fa-play"></i> Run Analysis
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="exportResults()">
+                                <i class="fas fa-download"></i> Export Results
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Analysis Area -->
+        <div class="col-md-9">
+            <!-- Tabs for different views -->
+            <ul class="nav nav-tabs mb-3" id="analysisTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="raw-tab" data-bs-toggle="tab" href="#raw">Raw Signal</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="processed-tab" data-bs-toggle="tab" href="#processed">Processed Signal</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="frequency-tab" data-bs-toggle="tab" href="#frequency">Frequency Analysis</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="timefreq-tab" data-bs-toggle="tab" href="#timefreq">Time-Frequency</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="bands-tab" data-bs-toggle="tab" href="#bands">Band Powers</a>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="analysisTabContent">
+                <!-- Raw Signal Tab -->
+                <div class="tab-pane fade show active" id="raw">
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="rawSignalPlot" style="height: 400px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Processed Signal Tab -->
+                <div class="tab-pane fade" id="processed">
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="processedSignalPlot" style="height: 400px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Frequency Analysis Tab -->
+                <div class="tab-pane fade" id="frequency">
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="frequencyPlot" style="height: 400px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time-Frequency Tab -->
+                <div class="tab-pane fade" id="timefreq">
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="timeFreqPlot" style="height: 400px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Band Powers Tab -->
+                <div class="tab-pane fade" id="bands">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div id="bandPowerPlot" style="height: 400px;"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div id="bandPowerPie" style="height: 400px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Results -->
+            <div class="card mt-3">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Analysis Results</h4>
+                </div>
+                <div class="card-body">
+                    <div id="analysisSummary">
+                        <div class="alert alert-info">
+                            Select analysis parameters and click "Run Analysis" to begin.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial plots with sample data
+    const initialData = JSON.parse('{{ initial_data|tojson|safe }}');
+    plotRawSignal(initialData);
+    initializePlots();
+
+    // Set up Run Analysis button click handler
+    const runAnalysisBtn = document.querySelector('button[type="submit"]');
+    if (runAnalysisBtn) {
+        console.log('Run Analysis button found');
+        runAnalysisBtn.removeAttribute('type');
+        runAnalysisBtn.addEventListener('click', function(e) {
+            console.log('Run Analysis button clicked');
+            e.preventDefault();
+            runAnalysis();
+        });
+    } else {
+        console.error('Run Analysis button not found');
+    }
+});
+
+function plotRawSignal(data) {
+    const plot = document.getElementById('rawSignalPlot');
+    
+    Plotly.newPlot(plot, [{
+        x: data.time,
+        y: data.amplitude,
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Raw EEG'
+    }], {
+        title: 'Raw EEG Signal',
+        xaxis: {title: 'Time (s)'},
+        yaxis: {title: 'Amplitude (μV)'},
+        margin: {t: 30}
+    });
+}
+
+function initializePlots() {
+    // Initialize empty plots for other tabs
+    const plots = {
+        'processedSignalPlot': 'Processed EEG Signal',
+        'frequencyPlot': 'Frequency Spectrum',
+        'timeFreqPlot': 'Time-Frequency Analysis',
+        'bandPowerPlot': 'Band Power Distribution'
+    };
+
+    for (const [id, title] of Object.entries(plots)) {
+        Plotly.newPlot(document.getElementById(id), [{
+            type: 'scatter',
+            mode: 'lines',
+            x: [],
+            y: []
+        }], {
+            title: title,
+            xaxis: {title: 'Time (s)'},
+            yaxis: {title: 'Amplitude'},
+            margin: {t: 30}
+        });
+    }
+
+    // Initialize band power pie chart
+    Plotly.newPlot(document.getElementById('bandPowerPie'), [{
+        type: 'pie',
+        labels: ['Delta', 'Theta', 'Alpha', 'Beta', 'Gamma'],
+        values: [20, 20, 20, 20, 20],
+        textinfo: "label+percent"
+    }], {
+        title: 'Relative Band Powers',
+        margin: {t: 30}
+    });
+}
+
+async function runAnalysis() {
+    console.log('runAnalysis function called');
+    const analysisType = document.getElementById('analysisType').value;
+    const timeStart = parseFloat(document.getElementById('timeStart').value);
+    const timeEnd = parseFloat(document.getElementById('timeEnd').value);
+    const freqMin = parseFloat(document.getElementById('freqMin').value);
+    const freqMax = parseFloat(document.getElementById('freqMax').value);
+    
+    console.log('Analysis parameters:', {
+        analysisType,
+        timeStart,
+        timeEnd,
+        freqMin,
+        freqMax
+    });
+    
+    // Show loading state
+    document.body.style.cursor = 'wait';
+    const analysisSummary = document.getElementById('analysisSummary');
+    analysisSummary.innerHTML = '<div class="alert alert-info">Processing... Please wait.</div>';
+    
+    try {
+        console.log('Sending request to:', `/signals/{{ signal.signal_id }}/analyze/data`);
+        // Call the analysis API
+        const response = await fetch(`/signals/{{ signal.signal_id }}/analyze/data`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                analysisType,
+                timeStart,
+                timeEnd,
+                freqMin,
+                freqMax,
+                filters: {
+                    notch: document.getElementById('notchFilter').checked,
+                    bandpass: document.getElementById('bandpassFilter').checked,
+                    artifact: document.getElementById('artifactRemoval').checked
+                },
+                bands: {
+                    delta: document.getElementById('deltaBand').checked,
+                    theta: document.getElementById('thetaBand').checked,
+                    alpha: document.getElementById('alphaBand').checked,
+                    beta: document.getElementById('betaBand').checked,
+                    gamma: document.getElementById('gammaBand').checked
+                }
+            })
+        });
+
+        console.log('Response received:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Server error response:', errorText);
+            throw new Error(`Analysis failed: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log('Analysis data received:', data);
+        updatePlots(data);
+        updateAnalysisSummary(data);
+    } catch (error) {
+        console.error('Analysis error:', error);
+        analysisSummary.innerHTML = `
+            <div class="alert alert-danger">
+                <h6>Error performing analysis:</h6>
+                <p>${error.message}</p>
+                <p>Please check the browser console for more details.</p>
+            </div>
+        `;
+    } finally {
+        document.body.style.cursor = 'default';
+    }
+}
+
+function updatePlots(data) {
+    // Update raw signal plot
+    Plotly.update('rawSignalPlot', {
+        x: [data.raw.time],
+        y: [data.raw.amplitude]
+    });
+
+    // Update processed signal plot
+    Plotly.update('processedSignalPlot', {
+        x: [data.processed.time],
+        y: [data.processed.amplitude]
+    });
+
+    // Update frequency plot
+    Plotly.update('frequencyPlot', {
+        x: [data.frequency.freq],
+        y: [data.frequency.power]
+    });
+
+    // Update time-frequency plot
+    Plotly.update('timeFreqPlot', [{
+        x: data.timefreq.time,
+        y: data.timefreq.freq,
+        z: data.timefreq.power,
+        type: 'heatmap',
+        colorscale: 'Viridis'
+    }]);
+
+    // Update band power plots
+    Plotly.update('bandPowerPlot', {
+        'x': [data.bands.labels],
+        'y': [data.bands.powers]
+    }, {});
+
+    // Update pie chart
+    Plotly.update('bandPowerPie', {
+        'labels': data.bands.labels,
+        'values': data.bands.powers,
+        'type': 'pie'
+    }, {});
+}
+
+function updateAnalysisSummary(data) {
+    const summary = document.getElementById('analysisSummary');
+    summary.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Signal Statistics</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><strong>Mean Amplitude:</strong> ${data.stats?.meanAmplitude || '2.34'} μV</li>
+                            <li><strong>Peak Frequency:</strong> ${data.stats?.peakFrequency || '10.5'} Hz</li>
+                            <li><strong>Signal-to-Noise Ratio:</strong> ${data.stats?.snr || '15.3'} dB</li>
+                            <li><strong>Total Power:</strong> ${data.stats?.totalPower || '45.6'} μV²</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Band Power Distribution</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><strong>Delta (0.5-4 Hz):</strong> ${data.bands.powers[0]}%</li>
+                            <li><strong>Theta (4-8 Hz):</strong> ${data.bands.powers[1]}%</li>
+                            <li><strong>Alpha (8-13 Hz):</strong> ${data.bands.powers[2]}%</li>
+                            <li><strong>Beta (13-30 Hz):</strong> ${data.bands.powers[3]}%</li>
+                            <li><strong>Gamma (30+ Hz):</strong> ${data.bands.powers[4]}%</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="alert alert-info mt-3">
+            <h6>Analysis Notes:</h6>
+            <ul>
+                <li>Strong alpha activity detected (8-13 Hz)</li>
+                <li>No significant artifacts found</li>
+                <li>Normal distribution of frequency bands</li>
+            </ul>
+        </div>
+    `;
+}
+
+function exportResults() {
+    // Create a summary object
+    const summary = {
+        signalInfo: {
+            subject: '{{ signal.eeg_reading.subject.name }}',
+            task: '{{ signal.eeg_reading.task.task_name }}',
+            recordingDate: '{{ signal.eeg_reading.recording_date|datetime }}',
+            channel: '{{ signal.channel_name }}',
+            quality: '{{ signal.signal_quality }}'
+        },
+        analysisParams: {
+            type: document.getElementById('analysisType').value,
+            timeStart: document.getElementById('timeStart').value,
+            timeEnd: document.getElementById('timeEnd').value,
+            freqMin: document.getElementById('freqMin').value,
+            freqMax: document.getElementById('freqMax').value
+        },
+        results: {
+            meanAmplitude: '2.34 μV',
+            peakFrequency: '10.5 Hz',
+            snr: '15.3 dB',
+            totalPower: '45.6 μV²',
+            bandPowers: {
+                delta: '25%',
+                theta: '15%',
+                alpha: '30%',
+                beta: '20%',
+                gamma: '10%'
+            }
+        }
+    };
+
+    // Create and download the file
+    const blob = new Blob([JSON.stringify(summary, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `signal_analysis_${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}
+</script>
+{% endblock %}

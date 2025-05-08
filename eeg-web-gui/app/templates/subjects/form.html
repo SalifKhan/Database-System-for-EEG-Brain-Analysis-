@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if subject else 'Add' }} Subject{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{{ 'Edit' if subject else 'Add New' }} Subject</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            {{ form.subject_id.label(class="form-label") }}
+                            {{ form.subject_id(class="form-control" + (" is-invalid" if form.subject_id.errors else "")) }}
+                            {% if form.subject_id.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.subject_id.errors[0] }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Enter a unique ID number for the subject.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                            {% if form.name.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.name.errors[0] }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.age.label(class="form-label") }}
+                            {{ form.age(class="form-control" + (" is-invalid" if form.age.errors else "")) }}
+                            {% if form.age.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.age.errors[0] }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.gender.label(class="form-label") }}
+                            {{ form.gender(class="form-control" + (" is-invalid" if form.gender.errors else "")) }}
+                            {% if form.gender.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.gender.errors[0] }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.handedness.label(class="form-label") }}
+                            {{ form.handedness(class="form-control" + (" is-invalid" if form.handedness.errors else "")) }}
+                            {% if form.handedness.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.handedness.errors[0] }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.medical_history.label(class="form-label") }}
+                            {{ form.medical_history(class="form-control" + (" is-invalid" if form.medical_history.errors else ""), rows="4") }}
+                            {% if form.medical_history.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.medical_history.errors[0] }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.consent_status(class="form-check-input" + (" is-invalid" if form.consent_status.errors else "")) }}
+                                {{ form.consent_status.label(class="form-check-label") }}
+                                {% if form.consent_status.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.consent_status.errors[0] }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('subjects.list') }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                {{ 'Save Changes' if subject else 'Add Subject' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

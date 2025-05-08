@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Signal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Upload New Signal</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.csrf_token }}
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form.subject.label(class="form-label") }}
+                    {{ form.subject(class="form-select") }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form.task.label(class="form-label") }}
+                    {{ form.task(class="form-select") }}
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="form-group">
+                    {{ form.duration_seconds.label(class="form-label") }}
+                    {{ form.duration_seconds(class="form-control") }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    {{ form.channel_name.label(class="form-label") }}
+                    {{ form.channel_name(class="form-control") }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    {{ form.signal_quality.label(class="form-label") }}
+                    {{ form.signal_quality(class="form-select") }}
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="form-group">
+                    {{ form.signal_file.label(class="form-label") }}
+                    {{ form.signal_file(class="form-control") }}
+                    {% if form.signal_file.errors %}
+                        {% for error in form.signal_file.errors %}
+                            <div class="alert alert-danger">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="form-group">
+                    {{ form.notes.label(class="form-label") }}
+                    {{ form.notes(class="form-control", rows=3) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-primary">Upload Signal</button>
+                <a href="{{ url_for('signals.list') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Preview file name when selected
+    const fileInput = document.querySelector('input[type="file"]');
+    fileInput.addEventListener('change', function() {
+        const fileName = this.files[0]?.name;
+        if (fileName) {
+            const fileText = this.nextElementSibling;
+            fileText.textContent = `Selected file: ${fileName}`;
+        }
+    });
+});
+</script>
+{% endblock %} 

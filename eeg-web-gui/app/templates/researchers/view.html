@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}View Researcher{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">Researcher Details</h3>
+                    <div class="btn-group">
+                        <a href="{{ url_for('researchers.edit', researcher_id=researcher.researcher_id) }}" 
+                           class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="{{ url_for('researchers.list') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th style="width: 200px;">ID</th>
+                            <td>{{ researcher.researcher_id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Name</th>
+                            <td>{{ researcher.first_name }} {{ researcher.last_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>{{ researcher.email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Institution</th>
+                            <td>{{ researcher.institution or 'Not specified' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Department</th>
+                            <td>{{ researcher.department or 'Not specified' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Specialization</th>
+                            <td>{{ researcher.specialization or 'Not specified' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Created At</th>
+                            <td>{{ researcher.created_at|datetime }}</td>
+                        </tr>
+                    </table>
+
+                    <!-- Associated Projects Section -->
+                    <h4 class="mt-4 mb-3">Associated Projects</h4>
+                    {% if researcher.projects %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Project Name</th>
+                                    <th>Role</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in researcher.projects %}
+                                <tr>
+                                    <td>{{ project.project_name }}</td>
+                                    <td>{{ project.role }}</td>
+                                    <td>{{ project.start_date|date }}</td>
+                                    <td>{{ project.end_date|date if project.end_date else 'Ongoing' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No projects associated with this researcher.
+                    </div>
+                    {% endif %}
+
+                    <!-- EEG Readings Section -->
+                    <h4 class="mt-4 mb-3">Recent EEG Readings</h4>
+                    {% if researcher.eeg_readings %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Recording ID</th>
+                                    <th>Subject</th>
+                                    <th>Date</th>
+                                    <th>Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reading in researcher.eeg_readings %}
+                                <tr>
+                                    <td>{{ reading.recording_id }}</td>
+                                    <td>{{ reading.subject.name }}</td>
+                                    <td>{{ reading.recording_date|datetime }}</td>
+                                    <td>{{ reading.duration_seconds }} seconds</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No EEG readings recorded by this researcher.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

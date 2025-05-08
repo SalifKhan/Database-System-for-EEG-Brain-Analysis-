@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Projects</h2>
+<form method="post" class="mb-4">
+    <div class="mb-2">
+        <input type="text" name="name" placeholder="Project Name" class="form-control" required>
+    </div>
+    <div class="mb-2">
+        <textarea name="description" placeholder="Description" class="form-control"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Project</button>
+</form>
+<table class="table table-bordered">
+    <thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Start Date</th><th>End Date</th><th>Status</th><th>Funding Source</th><th>Created At</th></tr></thead>
+    <tbody>
+    {% for project in projects %}
+        <tr>
+            <td>{{ project.project_id }}</td>
+            <td>{{ project.project_name }}</td>
+            <td>{{ project.description }}</td>
+            <td>{{ project.start_date }}</td>
+            <td>{{ project.end_date }}</td>
+            <td>{{ project.status }}</td>
+            <td>{{ project.funding_source }}</td>
+            <td>{{ project.created_at }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

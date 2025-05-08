@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if researcher else 'Add' }} Researcher{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{{ 'Edit' if researcher else 'Add New' }} Researcher</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            {{ form.researcher_id.label(class="form-label") }}
+                            {{ form.researcher_id(class="form-control" + (" is-invalid" if form.researcher_id.errors else "")) }}
+                            {% if form.researcher_id.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.researcher_id.errors[0] }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Enter a unique ID number for the researcher.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.first_name.label(class="form-label") }}
+                            {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else "")) }}
+                            {% if form.first_name.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.first_name.errors[0] }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.last_name.label(class="form-label") }}
+                            {{ form.last_name(class="form-control" + (" is-invalid" if form.last_name.errors else "")) }}
+                            {% if form.last_name.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.last_name.errors[0] }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                            {% if form.email.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.email.errors[0] }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.institution.label(class="form-label") }}
+                            {{ form.institution(class="form-control" + (" is-invalid" if form.institution.errors else "")) }}
+                            {% if form.institution.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.institution.errors[0] }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.department.label(class="form-label") }}
+                            {{ form.department(class="form-control" + (" is-invalid" if form.department.errors else "")) }}
+                            {% if form.department.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.department.errors[0] }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.specialization.label(class="form-label") }}
+                            {{ form.specialization(class="form-control" + (" is-invalid" if form.specialization.errors else "")) }}
+                            {% if form.specialization.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.specialization.errors[0] }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('researchers.list') }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                {{ 'Save Changes' if researcher else 'Add Researcher' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

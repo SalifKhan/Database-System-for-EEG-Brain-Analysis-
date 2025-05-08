@@ -1,0 +1,39 @@
+<!-- app/templates/index.html -->
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Welcome to EEG Web GUI</h1>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Subjects</h5>
+                    <p class="card-text">Manage research subjects and their information.</p>
+                    <a href="{{ url_for('subjects.list') }}" class="btn btn-primary">View Subjects</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Signals</h5>
+                    <p class="card-text">View and analyze EEG signal data.</p>
+                    <a href="{{ url_for('signals.list') }}" class="btn btn-primary">View Signals</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Projects</h5>
+                    <p class="card-text">Manage research projects and collaborations.</p>
+                    <a href="{{ url_for('projects.list') }}" class="btn btn-primary">View Projects</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

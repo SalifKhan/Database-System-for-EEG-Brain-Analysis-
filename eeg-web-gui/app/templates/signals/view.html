@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}View Signal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Signal Details</h2>
+        <a href="{{ url_for('signals.list') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Signal #{{ signal.signal_id }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="fw-bold">Recording Information</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Recording Date:</th>
+                            <td>{{ signal.eeg_reading.recording_date|datetime }}</td>
+                        </tr>
+                        <tr>
+                            <th>Subject:</th>
+                            <td>{{ signal.eeg_reading.subject.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Task:</th>
+                            <td>{{ signal.eeg_reading.task.task_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Duration:</th>
+                            <td>{{ signal.eeg_reading.duration_seconds }} seconds</td>
+                        </tr>
+                        <tr>
+                            <th>Equipment Used:</th>
+                            <td>{{ signal.eeg_reading.equipment_used }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="fw-bold">Signal Details</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Channel:</th>
+                            <td>{{ signal.channel_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Timestamp:</th>
+                            <td>{{ signal.timestamp|datetime }}</td>
+                        </tr>
+                        <tr>
+                            <th>Amplitude:</th>
+                            <td>{{ signal.amplitude }}</td>
+                        </tr>
+                        <tr>
+                            <th>Frequency:</th>
+                            <td>{{ signal.frequency if signal.frequency else 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Signal Quality:</th>
+                            <td>
+                                <span class="badge bg-{{ 'success' if signal.signal_quality == 'Excellent' 
+                                                       else 'warning' if signal.signal_quality == 'Good' 
+                                                       else 'danger' }}">
+                                    {{ signal.signal_quality }}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            {% if signal.eeg_reading.notes %}
+            <div class="mt-4">
+                <h6 class="fw-bold">Notes</h6>
+                <p class="mb-0">{{ signal.eeg_reading.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <div class="btn-group">
+                <a href="{{ url_for('signals.analyze', signal_id=signal.signal_id) }}" 
+                   class="btn btn-success">
+                    <i class="fas fa-chart-line"></i> Analyze
+                </a>
+                <form action="{{ url_for('signals.delete', signal_id=signal.signal_id) }}" 
+                      method="POST" style="display: inline;"
+                      onsubmit="return confirm('Are you sure you want to delete this signal? This action cannot be undone.');">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

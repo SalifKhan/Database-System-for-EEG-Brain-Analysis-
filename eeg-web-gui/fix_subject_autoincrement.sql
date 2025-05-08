@@ -1,0 +1,1 @@
+ALTER TABLE Subject AUTO_INCREMENT = 6; 
